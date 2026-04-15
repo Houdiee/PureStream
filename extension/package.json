@@ -1,0 +1,33 @@
+{
+  "name": "wxt-vue-starter",
+  "description": "manifest.json description",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "compile": "vue-tsc --noEmit",
+    "postinstall": "wxt prepare"
+  },
+  "dependencies": {
+    "@mantine/core": "^9.0.2",
+    "@mantine/notifications": "^9.0.2",
+    "ky": "^2.0.1",
+    "neverthrow": "^8.2.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "vite-plugin-wasm": "^3.6.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@wxt-dev/module-react": "^1.2.2",
+    "typescript": "^6.0.2",
+    "wxt": "^0.20.22"
+  }
+}
