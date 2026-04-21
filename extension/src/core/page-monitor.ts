@@ -1,7 +1,7 @@
 import { Result } from "neverthrow";
 import { Platform } from "../platform";
 
-const DEBOUNCE_MS = 500;
+const DEBOUNCE_MS = 1000;
 
 const debounce = (fn: () => void, ms: number) => {
   let timer: ReturnType<typeof setTimeout>;
@@ -19,13 +19,12 @@ export const monitorPageState = (
   const hasChanged = (title: string, src: string) => title !== current.title || src !== current.videoSrc;
 
   const check = async () => {
-    console.log("checking");
+    console.log(platform.getTitle());
     const result = Result.combine([platform.getTitle(), platform.getVideoElement()]);
     if (result.isErr()) return;
 
     const [title, video] = result.value;
     if (hasChanged(title, video.src)) {
-      console.log("has changed");
       current = { title, videoSrc: video.src };
       await callback(title, video);
     }

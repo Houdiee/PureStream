@@ -2,9 +2,9 @@ import { ok, err } from "neverthrow";
 import { Platform, Err } from "../platform";
 
 const getTitle: Platform["getTitle"] = () => {
-  const title = document.querySelector(".atvwebplayersdk-title-text");
-  if (!title || title.textContent.trim() === "") return err(Err.TitleNotFound());
-  return ok(title.textContent.trim());
+  const titleElement = document.querySelector<HTMLElement>(".atvwebplayersdk-title-text:not(:empty)");
+  const text = titleElement?.textContent?.trim();
+  return text ? ok(text) : err(Err.TitleNotFound());
 };
 
 const getVideoElement: Platform["getVideoElement"] = () => {
