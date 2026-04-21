@@ -15,8 +15,7 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
-    "@mantine/core": "^9.0.2",
-    "@mantine/notifications": "^9.0.2",
+    "@base-ui/react": "^1.4.1",
     "ky": "^2.0.1",
     "neverthrow": "^8.2.0",
     "react": "^19.2.5",
@@ -24,9 +23,11 @@
     "vite-plugin-wasm": "^3.6.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.2.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@wxt-dev/module-react": "^1.2.2",
+    "tailwindcss": "^4.2.3",
     "typescript": "^6.0.2",
     "wxt": "^0.20.22"
   }

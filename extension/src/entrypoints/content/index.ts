@@ -1,3 +1,5 @@
+import "~/assets/style.css";
+
 import { getPlatform } from "../../platform";
 import { monitorPageState } from "../../core/page-monitor";
 import { onPageReady } from "../../core/page-ready";

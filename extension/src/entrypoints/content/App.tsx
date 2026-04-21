@@ -1,5 +1,6 @@
-import { MantineProvider } from '@mantine/core';
-import { Notifications } from '@mantine/notifications';
+import { Toast } from "@base-ui/react";
+import { toastManager } from "../../toast";
+import { ToastViewport } from "../../components/Toast";
 
 interface AppProps {
   container: HTMLElement;
@@ -7,12 +8,11 @@ interface AppProps {
 
 const App = ({ container }: AppProps) => {
   return (
-    <MantineProvider getRootElement={() => container} defaultColorScheme="auto">
-      <Notifications
-        portalProps={{ target: container }}
-        position="bottom-right"
-      />
-    </MantineProvider>
+    <Toast.Provider toastManager={toastManager}>
+      <Toast.Portal container={container}>
+        <ToastViewport />
+      </Toast.Portal>
+    </Toast.Provider>
   );
 };
 
