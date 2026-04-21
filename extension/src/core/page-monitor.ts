@@ -33,6 +33,7 @@ export const monitorPageState = (
 
   const observer = new MutationObserver(debounce(check, DEBOUNCE_MS));
   observer.observe(document.body, {
+    childList: true,
     subtree: true,
     attributes: true,
     attributeFilter: ["src"],

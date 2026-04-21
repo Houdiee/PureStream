@@ -2,15 +2,17 @@ import { ok, err } from "neverthrow";
 import { Platform, Err } from "../platform";
 
 const getTitle: Platform["getTitle"] = () => {
-  const titles = Array.from(document.querySelectorAll(".atvwebplayersdk-title-text"));
-  const title = titles.find((el) => el.textContent.trim() !== "");
-  if (!title) return err(Err.TitleNotFound());
+  const title = document.querySelector(".atvwebplayersdk-title-text");
+  if (!title || title.textContent.trim() === "") return err(Err.TitleNotFound());
   return ok(title.textContent.trim());
 };
 
 const getVideoElement: Platform["getVideoElement"] = () => {
-  const video = Array.from(document.querySelectorAll("video")).find((video) => video.hasAttribute("src"));
-  return video ? ok(video) : err(Err.VideoNotFound());
+  const video = document.querySelector<HTMLVideoElement>("video[src]");
+  if (video && video.src && video.src !== "") {
+    return ok(video);
+  }
+  return err(Err.VideoNotFound());
 };
 
 const getSeasonAndEpNum: Platform["getSeasonAndEpNum"] = () => {
