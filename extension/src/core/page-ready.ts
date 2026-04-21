@@ -11,12 +11,13 @@ export const onPageReady = async (ctx: any, title: string, video: HTMLVideoEleme
   await SubmissionService.getScenes(title).match(
     async (submissions) => {
       const segments = await calculateSegments(submissions);
+      console.log(segments);
       toast.success("Active");
       handleVideo(video, segments, platformDelay);
     },
 
     async (error) => {
-      toast.warn(toMessage(error));
+      toast.error(toMessage(error));
       console.log(error);
     },
   );

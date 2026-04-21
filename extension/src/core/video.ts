@@ -7,8 +7,8 @@ export const handleVideo = (video: HTMLVideoElement, segments: Segment[], delay:
 
   const update = () => {
     const now = video.currentTime;
-    const activeSegment = segments.find((s) => s.start + delay <= now && now < s.end + delay);
-    const targetFilter = activeSegment ? "blur(25px)" : "none";
+    const shouldActivate = segments.some((s) => s.start + delay <= now && now < s.end + delay);
+    const targetFilter = shouldActivate ? "blur(25px)" : "none";
 
     if (video.style.filter !== targetFilter) {
       video.style.filter = targetFilter;

@@ -14,7 +14,11 @@ export const Err = {
 
 const getMediaByTitle: TMDBService["getMediaByTitle"] = (title: string) => {
   return fetchJson(api.get(`search?query=${encodeURIComponent(title)}`)).andThen((json: any) => {
-    const media = json.results.find((media: any) => media.title === title || media.name === title);
+    const media = json.results.find(
+      (media: any) =>
+        media.title?.trim().toLowerCase() === title.trim().toLowerCase() ||
+        media.name?.trim().toLowerCase() === title.trim().toLowerCase(),
+    );
     return media ? ok(media) : err(Err.TitleNotFound(title));
   });
 };
