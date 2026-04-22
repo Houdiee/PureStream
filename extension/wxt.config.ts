@@ -10,6 +10,11 @@ export default defineConfig({
     plugins: [tailwindcss(), wasm()],
   }),
   manifest: {
-    permissions: ["webNavigation"],
+    permissions: ["webNavigation", "storage"],
+    browser_specific_settings: {
+      gecko: {
+        id: "purestream@puresteam.ext",
+      },
+    },
   },
 });

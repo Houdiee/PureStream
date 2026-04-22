@@ -4,16 +4,24 @@ import { calculateSegments } from "./segment";
 import { handleVideo } from "./video";
 import { toast } from "../toast";
 import { toMessage } from "./error";
+import { Config } from "../config";
 
-export const onPageReady = async (ctx: any, title: string, video: HTMLVideoElement, platformDelay: number) => {
+interface onPageReadyOptions {
+  ctx: any;
+  title: string;
+  video: HTMLVideoElement;
+  platformDelay: number;
+  config: Config;
+}
+
+export const onPageReady = async ({ ctx, title, video, platformDelay, config }: onPageReadyOptions) => {
   await mountUi(ctx, video);
 
   await SubmissionService.getScenes(title).match(
     async (submissions) => {
       const segments = await calculateSegments(submissions);
-      console.log(segments);
-      toast.success("Active");
-      handleVideo(video, segments, platformDelay);
+      toast.success(`Active for "${title}"`);
+      handleVideo({ video, segments, platformDelay, config });
     },
 
     async (error) => {

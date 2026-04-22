@@ -46,7 +46,6 @@ type ToastObject = ReturnType<typeof Toast.useToastManager<ToastOptions>>["toast
 const ToastItem = ({ toast }: { toast: ToastObject }) => {
   const severity = toast.data?.severity ?? "info";
   const variantStyles = VARIANTS[severity];
-
   return (
     <Toast.Root
       toast={toast}
@@ -59,12 +58,9 @@ const ToastItem = ({ toast }: { toast: ToastObject }) => {
       `}
     >
       <div className="flex w-full items-start gap-4 p-4">
-        {/* Severity Icon */}
         <span className="mt-0.5 size-6 shrink-0 opacity-90">
           {icons[severity]}
         </span>
-
-        {/* Content */}
         <div className="flex flex-1 flex-col gap-1.5">
           <Toast.Title className="text-base leading-none">
             {toast.title}
@@ -75,8 +71,6 @@ const ToastItem = ({ toast }: { toast: ToastObject }) => {
             </Toast.Description>
           )}
         </div>
-
-        {/* Close Button */}
         <Toast.Close
           aria-label="Dismiss"
           className="flex size-6 shrink-0 items-center justify-center rounded-full hover:bg-white/10 transition-colors"
@@ -84,6 +78,9 @@ const ToastItem = ({ toast }: { toast: ToastObject }) => {
           <span className="size-4">{icons.close}</span>
         </Toast.Close>
       </div>
+      <div
+        className="absolute bottom-0 left-0 h-1 bg-white/30 transition-all duration-100 ease-linear"
+      />
     </Toast.Root>
   );
 };

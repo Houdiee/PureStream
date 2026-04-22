@@ -17,4 +17,6 @@ export const toast = {
   info: (message: string) => add("info", message),
   warn: (message: string) => add("warn", message),
   error: (message: string) => add("error", message),
+  update: (id: string, severity: ToastSeverity, message: string) =>
+    toastManager.update(id, { data: { severity, message } }),
 };

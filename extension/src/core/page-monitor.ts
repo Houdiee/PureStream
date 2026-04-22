@@ -11,15 +11,16 @@ const debounce = (fn: () => void, ms: number) => {
   };
 };
 
-export const monitorPageState = (
-  platform: Platform,
-  callback: (title: string, video: HTMLVideoElement) => Promise<void>,
-) => {
+interface MonitorPageStateOptions {
+  platform: Platform;
+  callback: (title: string, video: HTMLVideoElement) => Promise<void>;
+}
+
+export const monitorPageState = ({ platform, callback }: MonitorPageStateOptions) => {
   let current = { title: "", videoSrc: "" };
   const hasChanged = (title: string, src: string) => title !== current.title || src !== current.videoSrc;
 
   const check = async () => {
-    console.log(platform.getTitle());
     const result = Result.combine([platform.getTitle(), platform.getVideoElement()]);
     if (result.isErr()) return;
 
