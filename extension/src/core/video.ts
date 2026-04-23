@@ -9,6 +9,7 @@ interface HandleVideoOptions {
   platformDelay: number;
   config: Config;
   notifyUpcomingSeconds?: number;
+  onReport?: (segment: Segment) => void;
 }
 
 const VERB: Record<string, string> = { Skip: "Skipping", Blur: "Blurring", Blackout: "Blacking-out" };
@@ -20,13 +21,7 @@ const applyFilter = (video: HTMLVideoElement, filter: string) => {
   if (video.style.filter !== filter) video.style.filter = filter;
 };
 
-export const handleVideo = ({
-  video,
-  segments,
-  platformDelay,
-  config,
-  notifyUpcomingSeconds = 5,
-}: HandleVideoOptions) => {
+export const handleVideo = ({ video, segments, platformDelay, config, notifyUpcomingSeconds = 5, onReport }: HandleVideoOptions) => {
   const normalized = segments.map((s) => ({
     ...s,
     start: s.start + platformDelay,
@@ -35,6 +30,7 @@ export const handleVideo = ({
 
   const state = {
     skippedOnce: new Set<Segment>(),
+    reportedOnce: new Set<Segment>(),
     lastNotified: null as Segment | null,
     activeToastId: null as string | null,
     frameId: 0,
@@ -51,6 +47,7 @@ export const handleVideo = ({
       return;
     }
 
+    /* prettier-ignore */
     state.activeToastId = toast.info(message, {
       children: `Don't ${action.toLowerCase()}`,
       onClick() {
@@ -58,8 +55,20 @@ export const handleVideo = ({
         if (state.activeToastId) toastManager.close(state.activeToastId);
         state.activeToastId = null;
       },
-    });
+    }, 5000);
     state.lastNotified = upcoming;
+  };
+
+  const promptReport = (segment: Segment) => {
+    if (state.reportedOnce.has(segment)) return;
+    state.reportedOnce.add(segment);
+
+    toast.warn("Was this a false report?", {
+      children: "Report",
+      onClick() {
+        onReport?.(segment);
+      },
+    });
   };
 
   const applyEffect = (active: Segment) => {
@@ -82,6 +91,9 @@ export const handleVideo = ({
       state.lastNotified = null;
       state.activeToastId = null;
     }
+
+    const justEnded = normalized.find((s) => state.skippedOnce.has(s) && now >= s.end);
+    if (justEnded) promptReport(justEnded);
 
     active ? applyEffect(active) : applyFilter(video, "");
 

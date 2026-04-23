@@ -9,19 +9,22 @@ export interface ToastOptions {
 
 export const toastManager = Toast.createToastManager<ToastOptions>();
 
-const add = (severity: ToastSeverity, message: string, actionProps?: { children: string; onClick: () => void }) =>
+const add = (severity: ToastSeverity, message: string, actionProps?: { children: string; onClick: () => void }, duration = 3000) =>
   toastManager.add({
     title: "PureStream",
-    timeout: 3000,
+    timeout: duration,
     data: { severity, message },
     ...(actionProps && { actionProps }),
   });
 
 export const toast = {
-  success: (message: string) => add("success", message),
-  info: (message: string, actionProps?: { children: string; onClick: () => void }) => add("info", message, actionProps),
-  warn: (message: string) => add("warn", message),
-  error: (message: string) => add("error", message),
-  update: (id: string, severity: ToastSeverity, message: string) =>
-    toastManager.update(id, { data: { severity, message } }),
+  success: (message: string, actionProps?: { children: string; onClick: () => void }, duration?: number) =>
+    add("success", message, actionProps, duration),
+  info: (message: string, actionProps?: { children: string; onClick: () => void }, duration?: number) =>
+    add("info", message, actionProps, duration),
+  warn: (message: string, actionProps?: { children: string; onClick: () => void }, duration?: number) =>
+    add("warn", message, actionProps, duration),
+  error: (message: string, actionProps?: { children: string; onClick: () => void }, duration?: number) =>
+    add("error", message, actionProps, duration),
+  update: (id: string, severity: ToastSeverity, message: string) => toastManager.update(id, { data: { severity, message } }),
 };
