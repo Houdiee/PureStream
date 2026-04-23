@@ -1,86 +1,93 @@
 import { Segment } from "./segment";
+import { SubmissionSeverity } from "../submission";
 import { Config } from "../config";
-import { toast } from "../toast";
+import { toast, toastManager } from "../toast";
 
 interface HandleVideoOptions {
   video: HTMLVideoElement;
   segments: Segment[];
   platformDelay: number;
   config: Config;
-  notifyUpcomingSeconds: number;
+  notifyUpcomingSeconds?: number;
 }
+
+const VERB: Record<string, string> = { Skip: "Skipping", Blur: "Blurring", Blackout: "Blacking-out" };
+const FILTER: Record<string, string> = { Blur: "blur(25px)", Blackout: "brightness(0)" };
+
+const getAction = (severity: SubmissionSeverity, config: Config) => config[`severity${severity}` as keyof Config];
+
+const applyFilter = (video: HTMLVideoElement, filter: string) => {
+  if (video.style.filter !== filter) video.style.filter = filter;
+};
 
 export const handleVideo = ({
   video,
   segments,
   platformDelay,
   config,
-  notifyUpcomingSeconds = 3,
+  notifyUpcomingSeconds = 5,
 }: HandleVideoOptions) => {
-  let frameId: number;
-  let lastNotifiedSegment: Segment | null = null;
-  let activeToastId: string | null = null;
-
-  const normalizedSegments = segments.map((s) => ({
+  const normalized = segments.map((s) => ({
     ...s,
     start: s.start + platformDelay,
     end: s.end + platformDelay,
   }));
 
-  const update = () => {
-    const now = video.currentTime;
-    const upcoming = normalizedSegments.find((s) => now >= s.start - notifyUpcomingSeconds && now < s.start);
-    const active = normalizedSegments.find((s) => now >= s.start && now < s.end);
-
-    if (upcoming) {
-      const action = config[`severity${upcoming.severity}` as keyof Config];
-      if (action !== "Nothing") {
-        const verbMap: Record<string, string> = {
-          Skip: "Skipping",
-          Blur: "Blurring",
-          Blackout: "Blacking-out",
-        };
-
-        const secondsLeft = Math.ceil(upcoming.start - now);
-        const message = `${verbMap[action] || action} in ${secondsLeft}s`;
-
-        if (lastNotifiedSegment !== upcoming) {
-          activeToastId = toast.info(message);
-          lastNotifiedSegment = upcoming;
-        } else if (activeToastId) {
-          toast.update(activeToastId, "info", message);
-        }
-      }
-    }
-
-    if (lastNotifiedSegment && !upcoming && !active) {
-      lastNotifiedSegment = null;
-      activeToastId = null;
-    }
-
-    applyEffect(video, active, config);
-
-    frameId = requestAnimationFrame(update);
+  const state = {
+    skippedOnce: new Set<Segment>(),
+    lastNotified: null as Segment | null,
+    activeToastId: null as string | null,
+    frameId: 0,
   };
 
-  frameId = requestAnimationFrame(update);
-  return () => cancelAnimationFrame(frameId);
-};
+  const notify = (upcoming: Segment, now: number) => {
+    const action = getAction(upcoming.severity, config);
+    if (action === "Nothing") return;
 
-const applyEffect = (video: HTMLVideoElement, active: Segment | undefined, config: Config) => {
-  let filter = "";
+    const message = `${VERB[action]} in ${Math.ceil(upcoming.start - now)}s`;
 
-  if (active) {
-    const action = config[`severity${active.severity}` as keyof Config];
-    if (action === "Blur") filter = "blur(25px)";
-    if (action === "Blackout") filter = "brightness(0)";
+    if (state.lastNotified === upcoming) {
+      if (state.activeToastId) toast.update(state.activeToastId, "info", message);
+      return;
+    }
+
+    state.activeToastId = toast.info(message, {
+      children: `Don't ${action.toLowerCase()}`,
+      onClick() {
+        state.skippedOnce.add(upcoming);
+        if (state.activeToastId) toastManager.close(state.activeToastId);
+        state.activeToastId = null;
+      },
+    });
+    state.lastNotified = upcoming;
+  };
+
+  const applyEffect = (active: Segment) => {
+    if (state.skippedOnce.has(active)) return applyFilter(video, "");
+    const action = getAction(active.severity, config);
     if (action === "Skip") {
       video.currentTime = active.end;
       return;
     }
-  }
+    applyFilter(video, FILTER[action] ?? "");
+  };
 
-  if (video.style.filter !== filter) {
-    video.style.filter = filter;
-  }
+  const tick = () => {
+    const now = video.currentTime;
+    const upcoming = normalized.find((s) => now >= s.start - notifyUpcomingSeconds && now < s.start);
+    const active = normalized.find((s) => now >= s.start && now < s.end);
+
+    if (upcoming && !state.skippedOnce.has(upcoming)) notify(upcoming, now);
+    else if (!upcoming && state.lastNotified) {
+      state.lastNotified = null;
+      state.activeToastId = null;
+    }
+
+    active ? applyEffect(active) : applyFilter(video, "");
+
+    state.frameId = requestAnimationFrame(tick);
+  };
+
+  state.frameId = requestAnimationFrame(tick);
+  return () => cancelAnimationFrame(state.frameId);
 };

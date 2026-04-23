@@ -70,6 +70,9 @@ const ToastItem = ({ toast }: { toast: ToastObject }) => {
               {toast.data.message}
             </Toast.Description>
           )}
+          {toast.actionProps && (
+            <Toast.Action className="mt-0.5 self-start rounded border border-white/25 px-2 py-0.5 text-xs font-semibold text-white/90 transition-colors hover:bg-white/15" />
+          )}
         </div>
         <Toast.Close
           aria-label="Dismiss"
