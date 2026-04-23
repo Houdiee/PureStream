@@ -57,28 +57,28 @@ const ToastItem = ({ toast }: { toast: ToastObject }) => {
         ${variantStyles}
       `}
     >
-      <div className="flex w-full items-start gap-4 p-4">
-        <span className="mt-0.5 size-6 shrink-0 opacity-90">
+      <div className="flex w-full items-center gap-3 px-4 py-3">
+        <span className="size-5 shrink-0 opacity-90">
           {icons[severity]}
         </span>
-        <div className="flex flex-1 flex-col gap-1.5">
-          <Toast.Title className="text-base leading-none">
+        <div className="flex flex-1 flex-col gap-0.5">
+          <Toast.Title className="text-sm font-semibold leading-none">
             {toast.title}
           </Toast.Title>
           {toast.data?.message && (
-            <Toast.Description className="text-sm font-medium text-white/90">
+            <Toast.Description className="text-xs font-medium text-white/70">
               {toast.data.message}
             </Toast.Description>
           )}
-          {toast.actionProps && (
-            <Toast.Action className="mt-0.5 self-start rounded border border-white/25 px-2 py-0.5 text-xs font-semibold text-white/90 transition-colors hover:bg-white/15" />
-          )}
         </div>
+        {toast.actionProps && (
+          <Toast.Action className="shrink-0 rounded border border-white/25 px-3 py-1.5 text-xs font-semibold text-white/90 leading-none transition-colors hover:bg-white/15" />
+        )}
         <Toast.Close
           aria-label="Dismiss"
-          className="flex size-6 shrink-0 items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+          className="flex size-5 shrink-0 items-center justify-center rounded-full opacity-50 hover:opacity-100 transition-opacity"
         >
-          <span className="size-4">{icons.close}</span>
+          <span className="size-3.5">{icons.close}</span>
         </Toast.Close>
       </div>
       <div
