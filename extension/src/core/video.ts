@@ -88,6 +88,7 @@ export const handleVideo = ({ video, segments, platformDelay, config, notifyUpco
 
     if (upcoming && !state.skippedOnce.has(upcoming)) notify(upcoming, now);
     else if (!upcoming && state.lastNotified) {
+      if (state.activeToastId) toastManager.close(state.activeToastId);
       state.lastNotified = null;
       state.activeToastId = null;
     }

@@ -50,11 +50,11 @@ const ToastItem = ({ toast }: { toast: ToastObject }) => {
     <Toast.Root
       toast={toast}
       className={`
-            group relative flex min-w-[20rem] max-w-[28rem] w-fit overflow-hidden rounded-md border backdrop-blur-md
-    transition-all duration-300 ease-in-out shadow-lg
-    data-[starting-style]:translate-x-4 data-[starting-style]:opacity-0
-    data-[ending-style]:opacity-0 data-[ending-style]:scale-95
-    ${variantStyles}
+        group relative flex min-w-[20rem] max-w-[28rem] w-fit overflow-hidden rounded-md border backdrop-blur-md
+        transition-all duration-300 ease-in-out shadow-lg
+        data-[starting-style]:translate-x-4 data-[starting-style]:opacity-0
+        data-[ending-style]:opacity-0 data-[ending-style]:scale-95
+        ${variantStyles}
       `}
     >
       <div className="flex w-full items-center gap-3 px-4 py-3">
