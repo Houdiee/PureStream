@@ -5,6 +5,7 @@ import { Config, defaultConfig } from "../../config";
 import { getPlatform } from "../../platform";
 import { monitorPageState } from "../../core/page-monitor";
 import { onPageReady } from "../../core/page-ready";
+import { manualSearch as onWrongTitle } from "../../core/manual-search";
 
 export default defineContentScript({
   matches: ["*://*.primevideo.com/*"],
@@ -19,7 +20,7 @@ export default defineContentScript({
       (platform) =>
         monitorPageState({
           platform,
-          callback: (title, video) => onPageReady({ ctx, title, video, platformDelay: platform.delay, config }),
+          callback: (title, video) => onPageReady({ ctx, title, video, platformDelay: platform.delay, config, onWrongTitle }),
         }),
       (err) => console.error(err),
     );

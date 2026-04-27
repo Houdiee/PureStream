@@ -1,6 +1,7 @@
 import { Toast } from "@base-ui/react";
 
 export type ToastSeverity = "success" | "info" | "warn" | "error";
+export type ToastAction = { children: string; onClick: () => void };
 
 export interface ToastOptions {
   message: string;
@@ -9,22 +10,22 @@ export interface ToastOptions {
 
 export const toastManager = Toast.createToastManager<ToastOptions>();
 
-const add = (severity: ToastSeverity, message: string, actionProps?: { children: string; onClick: () => void }, duration = 3000) =>
+const NO_TIMEOUT = 2147483647;
+
+const add = (severity: ToastSeverity, message: string, action?: ToastAction, duration: number | null = 3000) =>
   toastManager.add({
     title: "PureStream",
-    timeout: duration,
+    timeout: duration ?? NO_TIMEOUT,
     data: { severity, message },
-    ...(actionProps && { actionProps }),
+    ...(action && { actionProps: action }),
   });
 
+type AddArgs = [message: string, action?: ToastAction, duration?: number | null];
+
 export const toast = {
-  success: (message: string, actionProps?: { children: string; onClick: () => void }, duration?: number) =>
-    add("success", message, actionProps, duration),
-  info: (message: string, actionProps?: { children: string; onClick: () => void }, duration?: number) =>
-    add("info", message, actionProps, duration),
-  warn: (message: string, actionProps?: { children: string; onClick: () => void }, duration?: number) =>
-    add("warn", message, actionProps, duration),
-  error: (message: string, actionProps?: { children: string; onClick: () => void }, duration?: number) =>
-    add("error", message, actionProps, duration),
+  success: (...args: AddArgs) => add("success", ...args),
+  info: (...args: AddArgs) => add("info", ...args),
+  warn: (...args: AddArgs) => add("warn", ...args),
+  error: (...args: AddArgs) => add("error", ...args),
   update: (id: string, severity: ToastSeverity, message: string) => toastManager.update(id, { data: { severity, message } }),
 };
