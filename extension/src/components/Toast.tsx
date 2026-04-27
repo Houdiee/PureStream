@@ -73,7 +73,6 @@ const ToastItem = ({ toast }: { toast: ToastObject }) => {
         </div>
         {toast.actionProps && (
           <Toast.Action
-            onPointerDown={(e) => e.preventDefault()}
             className="shrink-0 rounded border border-white/25 px-3 py-1.5 text-xs font-semibold text-white/90 leading-none transition-colors hover:bg-white/15" />
         )}
         <Toast.Close

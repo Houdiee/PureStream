@@ -5,7 +5,6 @@ import { TMDBMedia } from "../api/services/tmdb";
 
 /*
   CURRENT ISSUES:
-  pressing the button on the toast overrides keyboard behvaiour instead of passing it back to the site
   duplicate UI for whatever fucking reason
 
   TO-DO:

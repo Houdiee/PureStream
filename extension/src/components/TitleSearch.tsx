@@ -54,6 +54,7 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
 
       // Stop ALL other keypresses from bubbling or capturing to the host player
       e.stopPropagation();
+      e.stopImmediatePropagation();
     };
 
     // Use 'true' for capture phase to beat the video player's listeners
