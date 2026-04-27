@@ -18,5 +18,5 @@ export const mountUi = async (ctx: any, video: HTMLVideoElement) => {
     },
   });
   ui.mount();
-  return ui.uiContainer;
+  return ui;
 };

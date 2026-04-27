@@ -16,19 +16,12 @@ interface OnPageReadyOptions {
   config: Config;
 }
 
-let abortController: (() => void) | null = null;
-
 export const onPageReady = async ({ ctx, title, video, platformDelay, config }: OnPageReadyOptions) => {
-  const container = await mountUi(ctx, video);
-  startForTitle(title, video, platformDelay, config, container);
+  const uiContainer = (await mountUi(ctx, video)).uiContainer;
+  activate(title, video, platformDelay, config, uiContainer);
 };
 
-const startForTitle = async (title: string, video: HTMLVideoElement, platformDelay: number, config: Config, container: HTMLElement) => {
-  if (abortController) {
-    abortController();
-    abortController = null;
-  }
-
+const activate = async (title: string, video: HTMLVideoElement, platformDelay: number, config: Config, container: HTMLElement) => {
   await SubmissionService.getScenes(title).match(
     async (submissions) => {
       const segments = await calculateSegments(submissions);
@@ -37,10 +30,9 @@ const startForTitle = async (title: string, video: HTMLVideoElement, platformDel
         onClick: async () => {
           const selected = await openTitleSearch(container);
           if (!selected) return;
-          startForTitle(getDisplayTitle(selected), video, platformDelay, config, container);
+          activate(getDisplayTitle(selected), video, platformDelay, config, container);
         },
       });
-      handleVideo({ video, segments, platformDelay, config });
 
       const cleanupVideo = handleVideo({ video, segments, platformDelay, config });
       cleanupVideo();
@@ -51,7 +43,7 @@ const startForTitle = async (title: string, video: HTMLVideoElement, platformDel
         onClick: async () => {
           const selected = await openTitleSearch(container);
           if (!selected) return;
-          startForTitle(getDisplayTitle(selected), video, platformDelay, config, container);
+          activate(getDisplayTitle(selected), video, platformDelay, config, container);
         },
       });
       console.error(error);
