@@ -1,27 +1,26 @@
 import { ResultAsync } from "neverthrow";
-
 import { api } from "../client";
 import { FetchError, fetchJson } from "../fetch";
-import { TMDBService, TMDBServiceError } from "./tmdb";
+import { TMDBService, TMDBError, TMDBMedia } from "./tmdb";
 import { Submission, MediaType } from "../../submission";
 
+export type SubmissionServiceError = FetchError | TMDBError;
+
 interface SubmissionService {
-  getByMediaID: (mediaType: MediaType, id: number) => ResultAsync<Submission[], SubmissionServiceError>;
-  getScenes: (title: string) => ResultAsync<Submission[], FetchError | TMDBServiceError>;
+  getByMediaID: (mediaType: MediaType, id: number) => ResultAsync<Submission[], FetchError>;
+  getScenes: (title: string) => ResultAsync<Submission[], SubmissionServiceError>;
+  getScenesForMedia: (media: TMDBMedia) => ResultAsync<Submission[], FetchError>;
 }
 
-export type SubmissionServiceError = FetchError;
+const getByMediaID: SubmissionService["getByMediaID"] = (mediaType, id) =>
+  fetchJson<Submission[]>(api.get(`media/${mediaType}/${id}/submissions`));
 
-const getByMediaID: SubmissionService["getByMediaID"] = (mediaType: MediaType, id: number) => {
-  return fetchJson<Submission[]>(api.get(`media/${mediaType}/${id}/submissions`));
-};
+const getScenesForMedia: SubmissionService["getScenesForMedia"] = (media) => getByMediaID(media.media_type as MediaType, media.id);
 
-const getScenes: SubmissionService["getScenes"] = (title: string) =>
-  TMDBService.getMediaByTitle(title).andThen((media) =>
-    SubmissionService.getByMediaID(media.media_type as MediaType, media.id as number),
-  );
+const getScenes: SubmissionService["getScenes"] = (title) => TMDBService.findByTitle(title).andThen(getScenesForMedia);
 
 export const SubmissionService: SubmissionService = {
   getByMediaID,
   getScenes,
+  getScenesForMedia,
 };
