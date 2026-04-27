@@ -1,6 +1,6 @@
 import { mountUi } from "./mount-ui";
 import { SubmissionService } from "../api/services/submission";
-import { getDisplayTitle } from "../api/services/tmdb";
+import { getDisplayTitle, TMDBMedia } from "../api/services/tmdb";
 import { calculateSegments } from "./segment";
 import { handleVideo } from "./video";
 import { openTitleSearch } from "./title-search";
@@ -23,22 +23,38 @@ export const onPageReady = async ({ ctx, title, video, platformDelay, config }: 
 
 let deactivateVideo: (() => void) | null = null;
 
-const activate = async (title: string, video: HTMLVideoElement, platformDelay: number, config: Config, container: HTMLElement) => {
+const activate = async (
+  target: string | TMDBMedia,
+  video: HTMLVideoElement,
+  platformDelay: number,
+  config: Config,
+  container: HTMLElement,
+) => {
   if (deactivateVideo) {
     deactivateVideo();
     deactivateVideo = null;
     toast.close();
   }
 
-  await SubmissionService.getScenes(title).match(
+  /* prettier-ignore */
+  const submissionTask = typeof target === "string" 
+    ? SubmissionService.getScenes(target) 
+    : SubmissionService.getSubmissionsForMedia(target);
+
+  /* prettier-ignore */
+  const displayTitle = typeof target === "string" 
+    ? target 
+    : getDisplayTitle(target);
+
+  await submissionTask.match(
     async (submissions) => {
       const segments = await calculateSegments(submissions);
-      toast.success(`Active for "${title}"`, {
+      toast.success(`Active for "${displayTitle}"`, {
         children: "Not right?",
         onClick: async () => {
           const selected = await openTitleSearch(container);
           if (!selected) return;
-          activate(getDisplayTitle(selected), video, platformDelay, config, container);
+          activate(selected, video, platformDelay, config, container);
         },
       });
 

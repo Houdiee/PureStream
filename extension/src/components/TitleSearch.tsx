@@ -37,8 +37,22 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
   const [results, setResults] = useState<TMDBMedia[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    const activeItem = listRef.current?.children[selectedIndex] as HTMLElement;
+    if (activeItem) {
+      activeItem.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }, [selectedIndex]);
+
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [results]);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -69,6 +83,39 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [query]);
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    e.stopPropagation();
+
+    if (results.length === 0) {
+      if (e.key === "Escape") onDismiss();
+      return;
+    }
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev + 1) % results.length);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev - 1 + results.length) % results.length);
+        break;
+      case "Tab":
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev + 1) % results.length);
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (results[selectedIndex]) {
+          onSelect(results[selectedIndex]);
+        }
+        break;
+      case "Escape":
+        onDismiss();
+        break;
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-[2147483647] flex justify-center items-start pt-[15vh] bg-black/60 backdrop-blur-sm"
@@ -83,17 +130,13 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
         </div>
 
         <input
+          autoFocus
           ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-            if (e.key === "Enter" && results.length > 0) {
-              onSelect(results[0]);
-            }
-          }}
+          onKeyDown={handleKeyDown}
           placeholder="Search movies & shows..."
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-white/25"
+          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:outline-none focus:border-white/25"
         />
 
         <div className="relative min-h-[100px]">
@@ -112,30 +155,42 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
           ) : error ? (
             <p className="text-center text-xs text-white/40 py-8 italic">{error}</p>
           ) : (
-            <ul className="flex max-h-80 flex-col gap-1 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
-              {results.map((media) => (
-                <li key={`${media.media_type}-${media.id}`}>
-                  <button
-                    onClick={() => onSelect(media)}
-                    className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-white/5 group"
-                  >
-                    <div className="h-14 w-10 shrink-0 overflow-hidden rounded bg-white/5">
-                      <PosterImage path={media.poster_path} title={getDisplayTitle(media)} />
-                    </div>
-                    <div className="flex min-w-0 flex-col gap-1">
-                      <span className="truncate text-sm font-medium text-white group-hover:text-blue-400">
-                        {getDisplayTitle(media)}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-white/40">{getDisplayYear(media)}</span>
-                        <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-white/50">
-                          {media.media_type === "tv" ? "Show" : "Movie"}
-                        </span>
+            <ul
+              ref={listRef}
+              className="flex max-h-80 flex-col gap-1 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10"
+            >
+              {results.map((media, index) => {
+                const isActive = index === selectedIndex;
+                return (
+                  <li key={`${media.media_type}-${media.id}`}>
+                    <button
+                      tabIndex={-1}
+                      onClick={() => onSelect(media)}
+                      onMouseEnter={() => setSelectedIndex(index)}
+                      className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors outline-none focus:outline-none group ${isActive ? "bg-blue-600/20 ring-1 ring-inset ring-blue-500/50" : "hover:bg-white/5"
+                        }`}
+                    >
+                      <div className="h-14 w-10 shrink-0 overflow-hidden rounded bg-white/5">
+                        <PosterImage path={media.poster_path} title={getDisplayTitle(media)} />
                       </div>
-                    </div>
-                  </button>
-                </li>
-              ))}
+                      <div className="flex min-w-0 flex-col gap-1">
+                        <span className={`truncate text-sm font-medium transition-colors ${isActive ? "text-blue-400" : "text-white"}`}>
+                          {getDisplayTitle(media)}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs ${isActive ? "text-blue-300/60" : "text-white/40"}`}>
+                            {getDisplayYear(media)}
+                          </span>
+                          <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${isActive ? "bg-blue-500/20 text-blue-300/80" : "bg-white/10 text-white/50"
+                            }`}>
+                            {media.media_type === "tv" ? "Show" : "Movie"}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
