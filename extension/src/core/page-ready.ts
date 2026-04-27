@@ -27,6 +27,7 @@ const activate = async (title: string, video: HTMLVideoElement, platformDelay: n
   if (deactivateVideo) {
     deactivateVideo();
     deactivateVideo = null;
+    toast.close();
   }
 
   await SubmissionService.getScenes(title).match(

@@ -28,4 +28,5 @@ export const toast = {
   warn: (...args: AddArgs) => add("warn", ...args),
   error: (...args: AddArgs) => add("error", ...args),
   update: (id: string, severity: ToastSeverity, message: string) => toastManager.update(id, { data: { severity, message } }),
+  close: (id?: string) => toastManager.close(id),
 };
