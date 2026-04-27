@@ -98,7 +98,6 @@ export const handleVideo = ({ video, segments, platformDelay, config, notifyUpco
     const upcoming = normalized.find((s) => now >= s.start - notifyUpcomingSeconds && now < s.start);
     const active = normalized.find((s) => now >= s.start && now < s.end);
 
-    // ── Notification window ──────────────────────────────────────────────────
     if (upcoming && !state.dismissed.has(upcoming)) {
       notify(upcoming, now);
     } else if (!upcoming && state.lastNotified) {
@@ -127,6 +126,7 @@ export const handleVideo = ({ video, segments, platformDelay, config, notifyUpco
   const start = () => {
     state.frameId = requestAnimationFrame(tick);
   };
+
   const stop = () => {
     cancelAnimationFrame(state.frameId);
     state.frameId = 0;
@@ -135,7 +135,6 @@ export const handleVideo = ({ video, segments, platformDelay, config, notifyUpco
   video.addEventListener("play", start);
   video.addEventListener("pause", stop);
   video.addEventListener("seeked", tick);
-
   if (!video.paused) start();
 
   return () => {

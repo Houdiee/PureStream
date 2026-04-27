@@ -6,7 +6,6 @@ interface Props {
   onDismiss: () => void;
 }
 
-// Sub-component to handle image skeletonization per item
 const PosterImage = ({ path, title }: { path: string | null; title: string }) => {
   const [loaded, setLoaded] = useState(false);
 
@@ -41,28 +40,6 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  // Focus and Key-Capture logic
-  useEffect(() => {
-    inputRef.current?.focus();
-
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // Allow Escape to close even at the global level
-      if (e.key === "Escape") {
-        onDismiss();
-        return;
-      }
-
-      // Stop ALL other keypresses from bubbling or capturing to the host player
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-    };
-
-    // Use 'true' for capture phase to beat the video player's listeners
-    window.addEventListener("keydown", handleGlobalKeyDown, true);
-    return () => window.removeEventListener("keydown", handleGlobalKeyDown, true);
-  }, [onDismiss]);
-
-  // Search logic with debounce
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (!query.trim()) {
@@ -96,6 +73,8 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
     <div
       className="fixed inset-0 z-[2147483647] flex justify-center items-start pt-[15vh] bg-black/60 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onDismiss()}
+      onKeyDown={(e) => e.stopPropagation()}
+      onKeyUp={(e) => e.stopPropagation()}
     >
       <div className="flex w-[28rem] flex-col gap-3 rounded-xl border border-white/10 bg-neutral-900 p-4 shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between">
@@ -107,6 +86,12 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
           ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            if (e.key === "Enter" && results.length > 0) {
+              onSelect(results[0]);
+            }
+          }}
           placeholder="Search movies & shows..."
           className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-white/25"
         />

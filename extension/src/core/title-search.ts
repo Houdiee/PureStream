@@ -3,15 +3,6 @@ import { createElement } from "react";
 import { TitleSearch } from "../components/TitleSearch";
 import { TMDBMedia } from "../api/services/tmdb";
 
-/*
-  CURRENT ISSUES:
-  duplicate UI for whatever fucking reason
-
-  TO-DO:
-  1. Re-activate the extension and search for the newly selected title in multi search with its appropriate media type search
-  2. Report false submission
-*/
-
 export const openTitleSearch = (container: HTMLElement): Promise<TMDBMedia | null> =>
   new Promise((resolve) => {
     const node = document.createElement("div");

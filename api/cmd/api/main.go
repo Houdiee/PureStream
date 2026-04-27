@@ -36,40 +36,76 @@ func InitDatabase(driverName string, connectionString string) *sql.DB {
 }
 
 func SeedSubmissionData(service *service.SubmissionService) {
-	mediaType := submission.MediaType(submission.MediaTypeTV)
-	mediaID := 95557
-	Season := 4
-	Episode := 1
-
-	submissions := []submission.AddSubmissionRequest{
+	invincibleMediaID := 95557
+	invincibleMediaType := submission.MediaType(submission.MediaTypeTV)
+	invincibleSeason := 4
+	invincibleEpisode := 1
+	invincibleSubmissions := []submission.AddSubmissionRequest{
 		{
 			Severity: submission.SeverityModerate,
 			Start:    10.0,
 			End:      15,
-			Season:   &Season,
-			Episode:  &Episode,
+			Season:   &invincibleSeason,
+			Episode:  &invincibleEpisode,
 			IsReport: false,
 		},
 		{
 			Severity: submission.SeverityMild,
 			Start:    11.2,
 			End:      17,
-			Season:   &Season,
-			Episode:  &Episode,
+			Season:   &invincibleSeason,
+			Episode:  &invincibleEpisode,
 			IsReport: false,
 		},
 		{
 			Severity: submission.SeveritySevere,
 			Start:    11,
 			End:      13,
-			Season:   &Season,
-			Episode:  &Episode,
+			Season:   &invincibleSeason,
+			Episode:  &invincibleEpisode,
 			IsReport: false,
 		},
 	}
 
-	for _, submission := range submissions {
-		if err := service.AddScene(mediaType, mediaID, submission); err != nil {
+	codeGeassMediaID := 31724
+	codeGeassMediaType := submission.MediaType(submission.MediaTypeTV)
+	codeGeassSeason := 4
+	codeGeassEpisode := 1
+	codeGeassSubmissions := []submission.AddSubmissionRequest{
+		{
+			Severity: submission.SeverityModerate,
+			Start:    20.0,
+			End:      25,
+			Season:   &codeGeassSeason,
+			Episode:  &codeGeassEpisode,
+			IsReport: false,
+		},
+		{
+			Severity: submission.SeverityMild,
+			Start:    21.2,
+			End:      27,
+			Season:   &codeGeassSeason,
+			Episode:  &codeGeassEpisode,
+			IsReport: false,
+		},
+		{
+			Severity: submission.SeveritySevere,
+			Start:    21,
+			End:      23,
+			Season:   &codeGeassSeason,
+			Episode:  &codeGeassEpisode,
+			IsReport: false,
+		},
+	}
+
+	for _, submission := range invincibleSubmissions {
+		if err := service.AddScene(invincibleMediaType, invincibleMediaID, submission); err != nil {
+			slog.Error("Failed to seed scene data", "error", err)
+		}
+	}
+
+	for _, submission := range codeGeassSubmissions {
+		if err := service.AddScene(codeGeassMediaType, codeGeassMediaID, submission); err != nil {
 			slog.Error("Failed to seed scene data", "error", err)
 		}
 	}

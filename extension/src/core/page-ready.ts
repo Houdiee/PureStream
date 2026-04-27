@@ -21,7 +21,14 @@ export const onPageReady = async ({ ctx, title, video, platformDelay, config }: 
   activate(title, video, platformDelay, config, uiContainer);
 };
 
+let deactivateVideo: (() => void) | null = null;
+
 const activate = async (title: string, video: HTMLVideoElement, platformDelay: number, config: Config, container: HTMLElement) => {
+  if (deactivateVideo) {
+    deactivateVideo();
+    deactivateVideo = null;
+  }
+
   await SubmissionService.getScenes(title).match(
     async (submissions) => {
       const segments = await calculateSegments(submissions);
@@ -34,9 +41,9 @@ const activate = async (title: string, video: HTMLVideoElement, platformDelay: n
         },
       });
 
-      const cleanupVideo = handleVideo({ video, segments, platformDelay, config });
-      cleanupVideo();
+      deactivateVideo = handleVideo({ video, segments, platformDelay, config });
     },
+
     async (error) => {
       toast.error(toMessage(error), {
         children: "Search manually",

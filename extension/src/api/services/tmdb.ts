@@ -15,7 +15,6 @@ export type TMDBMedia = {
 export type TMDBError = FetchError | { tag: "TMDBError::NotFound"; query: string };
 
 export const TMDB_IMG = (path: string) => `https://image.tmdb.org/t/p/w92${path}`;
-
 export const getDisplayTitle = (m: TMDBMedia) => m.title ?? m.name ?? "Unknown";
 export const getDisplayYear = (m: TMDBMedia) => (m.release_date ?? m.first_air_date ?? "").slice(0, 4) || null;
 
