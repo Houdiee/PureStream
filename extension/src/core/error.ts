@@ -1,10 +1,17 @@
-import { TMDBServiceError } from "../api/services/tmdb";
-import { SubmissionServiceError } from "../api/services/submission";
+import { TMDBError } from "../api/services/tmdb";
+import { FetchError } from "../api/fetch";
+import { PlatformError } from "../platform";
 
-type AppError = TMDBServiceError | SubmissionServiceError;
+type AppError = FetchError | TMDBError | PlatformError;
 
 const ErrorMap: Record<AppError["tag"], (err: any) => string> = {
-  "TMDBServiceError::TitleNotFound": (e) => `Failed to find "${e.title}" on TMDB.`,
+  "TMDBError::NotFound": (e) => `Failed to find "${e.title}" on TMDB`,
+
+  "PlatformError::SeasonAndEpNumNotFound": () => "Failed to identiy current episode",
+  "PlatformError::UnsupportedPlatform": () => "Unsupported platform",
+  "PlatformError::TitleNotFound": () => "Failed to identify title",
+  "PlatformError::VideoNotFound": () => "Failed to identify video element",
+
   "FetchError::Network": () => "Network error",
   "FetchError::BadResponse": (e) => `Server error ${e.status}`,
   "FetchError::JsonParse": () => "Failed to parse JSON",

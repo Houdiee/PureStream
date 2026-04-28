@@ -49,6 +49,7 @@ const ToastItem = ({ toast }: { toast: ToastObject }) => {
   return (
     <Toast.Root
       toast={toast}
+      onClick={(e) => e.stopPropagation()}
       className={`
         group relative flex min-w-[20rem] max-w-[28rem] w-fit overflow-hidden rounded-md border backdrop-blur-md
         transition-all duration-300 ease-in-out shadow-lg

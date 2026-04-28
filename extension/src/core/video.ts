@@ -2,14 +2,18 @@ import { Segment } from "./segment";
 import { SubmissionSeverity } from "../submission";
 import { Config } from "../config";
 import { toast, toastManager } from "../toast";
+import { TMDBMedia } from "../api/services/tmdb";
+import { SubmissionService } from "../api/services/submission";
 
 interface HandleVideoOptions {
   video: HTMLVideoElement;
+  media: TMDBMedia;
   segments: Segment[];
-  platformDelay: number;
+  delay: number;
   config: Config;
+  season?: number;
+  episode?: number;
   notifyUpcomingSeconds?: number;
-  onReport?: (segment: Segment) => void;
 }
 
 const VERB: Record<string, string> = { Skip: "Skipping", Blur: "Blurring", Blackout: "Blacking-out" };
@@ -21,10 +25,8 @@ const applyFilter = (video: HTMLVideoElement, filter: string) => {
   if (video.style.filter !== filter) video.style.filter = filter;
 };
 
-export const handleVideo = ({ video, segments, platformDelay, config, notifyUpcomingSeconds = 5, onReport }: HandleVideoOptions) => {
-  const normalized = segments
-    .map((s) => ({ ...s, start: s.start + platformDelay, end: s.end + platformDelay }))
-    .sort((a, b) => a.start - b.start);
+export const handleVideo = ({ video, media, segments, delay, config, season, episode, notifyUpcomingSeconds = 5 }: HandleVideoOptions) => {
+  const normalized = segments.map((s) => ({ ...s, start: s.start + delay, end: s.end + delay })).sort((a, b) => a.start - b.start);
 
   const state = {
     dismissed: new Set<Segment>(),
@@ -55,7 +57,7 @@ export const handleVideo = ({ video, segments, platformDelay, config, notifyUpco
       message,
       {
         children: `Don't ${action.toLowerCase()}`,
-        onClick() {
+        onClick: () => {
           state.dismissed.add(upcoming);
           closeActiveToast();
         },
@@ -68,10 +70,11 @@ export const handleVideo = ({ video, segments, platformDelay, config, notifyUpco
   const promptReport = (segment: Segment) => {
     if (state.reportedOnce.has(segment)) return;
     state.reportedOnce.add(segment);
-    toast.warn("Was this a false report?", {
+    const id = toast.warn("Was this a false report?", {
       children: "Report",
-      onClick() {
-        onReport?.(segment);
+      onClick: () => {
+        SubmissionService.reportSegment(segment, media, season, episode);
+        toastManager.close(id);
       },
     });
   };
@@ -90,7 +93,6 @@ export const handleVideo = ({ video, segments, platformDelay, config, notifyUpco
   const tick = () => {
     const now = video.currentTime;
 
-    // Evict dismissed segments the playhead has rewound behind their notify window
     for (const seg of state.dismissed) {
       if (now < seg.start - notifyUpcomingSeconds) state.dismissed.delete(seg);
     }
@@ -105,28 +107,19 @@ export const handleVideo = ({ video, segments, platformDelay, config, notifyUpco
       state.lastNotified = null;
     }
 
-    // Countdown toast closes the moment the segment goes active
     if (active && state.activeToastId) closeActiveToast();
 
-    // ── False-report prompt ──────────────────────────────────────────────────
     const justEnded = normalized.find((s) => state.dismissed.has(s) && now >= s.end);
     if (justEnded) promptReport(justEnded);
 
-    // ── Filter / skip ────────────────────────────────────────────────────────
     active ? applyEffect(active) : applyFilter(video, "");
 
     state.frameId = requestAnimationFrame(tick);
   };
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
-  // No need to burn CPU on rAF while the video is paused. The countdown toast
-  // stays open (Base UI timer is frozen at MAX_SAFE), and resumes updating the
-  // moment playback continues. A single tick on "seeked" keeps state correct
-  // when the user scrubs while paused.
   const start = () => {
     state.frameId = requestAnimationFrame(tick);
   };
-
   const stop = () => {
     cancelAnimationFrame(state.frameId);
     state.frameId = 0;

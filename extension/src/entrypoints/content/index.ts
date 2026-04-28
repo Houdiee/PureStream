@@ -17,7 +17,7 @@ export default defineContentScript({
       (platform) =>
         monitorPageState({
           platform,
-          callback: (title, video) => onPageReady({ ctx, title, video, platformDelay: platform.delay, config }),
+          callback: (title, video) => onPageReady({ ctx, platform, title, video, config }),
         }),
       (err) => console.error(err),
     );
