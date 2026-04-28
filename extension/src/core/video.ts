@@ -53,17 +53,15 @@ export const handleVideo = ({ video, media, segments, delay, config, season, epi
       return;
     }
 
-    state.activeToastId = toast.info(
-      message,
-      {
-        children: `Don't ${action.toLowerCase()}`,
-        onClick: () => {
-          state.dismissed.add(upcoming);
-          closeActiveToast();
-        },
+    /* prettier-ignore */
+    state.activeToastId = toast.info(message, {
+      children: `Don't ${action.toLowerCase()}`,
+      onClick: () => {
+        state.dismissed.add(upcoming);
+        closeActiveToast();
       },
-      null,
-    );
+    }, null);
+
     state.lastNotified = upcoming;
   };
 

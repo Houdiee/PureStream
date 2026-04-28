@@ -43,11 +43,25 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
+  // Hold focus for the entire lifetime of the component — any time focus leaves
+  // the input for any reason (DOM insertion, player steal, scroll), bounce it back.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => inputRef.current?.focus());
+
+    const handleFocusOut = () => {
+      requestAnimationFrame(() => inputRef.current?.focus());
+    };
+
+    inputRef.current?.addEventListener("focusout", handleFocusOut);
+    return () => {
+      cancelAnimationFrame(frame);
+      inputRef.current?.removeEventListener("focusout", handleFocusOut);
+    };
+  }, []);
+
   useEffect(() => {
     const activeItem = listRef.current?.children[selectedIndex] as HTMLElement;
-    if (activeItem) {
-      activeItem.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    }
+    activeItem?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [selectedIndex]);
 
   useEffect(() => {
@@ -76,7 +90,7 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
           setError("No results found.");
           setResults([]);
           setLoading(false);
-        }
+        },
       );
     }, 350);
 
@@ -106,9 +120,7 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
         break;
       case "Enter":
         e.preventDefault();
-        if (results[selectedIndex]) {
-          onSelect(results[selectedIndex]);
-        }
+        if (results[selectedIndex]) onSelect(results[selectedIndex]);
         break;
       case "Escape":
         onDismiss();
@@ -130,7 +142,6 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
         </div>
 
         <input
-          autoFocus
           ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -165,6 +176,7 @@ export const TitleSearch = ({ onSelect, onDismiss }: Props) => {
                   <li key={`${media.media_type}-${media.id}`}>
                     <button
                       tabIndex={-1}
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => onSelect(media)}
                       onMouseEnter={() => setSelectedIndex(index)}
                       className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors outline-none focus:outline-none group ${isActive ? "bg-blue-600/20 ring-1 ring-inset ring-blue-500/50" : "hover:bg-white/5"
